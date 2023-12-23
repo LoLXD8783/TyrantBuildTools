@@ -1,0 +1,74 @@
+Configs: {
+	DebugConfig: {
+		DisplayName: Debug Config
+
+		EnableReloadNRejoin: {
+			Label: Enable Reload N Rejoin
+			Tooltip: ""
+		}
+
+		ReloadNRejoinExitNoSaveByDefault: {
+			Label: Reload N Rejoin Exit No Save By Default
+			Tooltip: ""
+		}
+
+		TargetMod: {
+			Label: Target Mod
+			Tooltip: ""
+		}
+	}
+
+	ReloadNRejoinConfig: {
+		DisplayName: Reload N Rejoin Config
+
+		EnableReloadNRejoin: {
+			Label: Enable Reload N Rejoin
+			Tooltip: ""
+		}
+
+		ReloadNRejoinExitNoSaveByDefault: {
+			Label: Reload N Rejoin Exit No Save By Default
+			Tooltip: "Whether to exit without saving if 'save' or 'nosave' are not specified in the /rnr command."
+		}
+
+		TargetMod: {
+			Label: Target Mod
+			Tooltip: 
+			'''
+			The name of the mod to rebuild/package. 
+			Must be the internal name of the mod and should be visible from the mod sources menu.
+			'''
+		}
+	}
+
+	PackagingChangesConfig: {
+		SkipImageCompression: {
+			Label: Skip Image Compression
+			Tooltip: 
+			'''
+			May decrease packaging times.
+			If enabled, .png files are not processed into .rawimg images during packaging.
+			It's recommended to disable this option when publishing mods.
+			'''
+		}
+		FastCompression: {
+			Label: Fast Compression
+			Tooltip: 
+			'''
+			May decrease packaging times.
+			If enabled, files are compressed with CompressionLevel.BestSpeed during packaging.
+			It's recommended to disable this option when publishing mods.
+			'''
+		}
+
+		AsyncPackaging: {
+			Label: Async packaging
+			Tooltip: 
+			'''
+			[Requires Reload]
+			If enabled, the mod compilation and the packaging process will run asynchronously.
+			Aka, packaging will start while compilation is still happening.
+			'''
+		}
+	}
+}

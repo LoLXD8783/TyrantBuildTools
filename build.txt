@@ -1,0 +1,4 @@
+displayName = Tyrant build tools
+author = lolequide3432
+version = 0.1
+modSide = client

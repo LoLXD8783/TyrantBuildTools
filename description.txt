@@ -1,0 +1,8 @@
+Provides tools to help with mod development.
+
+namely: 
+- A Reload N Rejoin (/rnr) command that exits the world (optionally without saving), rebuilds the specified mod and rejoins the same world with the same player.
+- Packaging options to 
+  - Cancel TML's image processing to .rawimg files
+  - Use fast compression
+  - Compile and package the mod asynchronously 
