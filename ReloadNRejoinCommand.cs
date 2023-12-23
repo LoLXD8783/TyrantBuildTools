@@ -19,6 +19,7 @@ using Terraria.IO;
 using Terraria.ModLoader;
 using Terraria.UI;
 using TyrantBuildTools.Config;
+using ICommandCaller = Terraria.ModLoader.CommandCaller;
 
 // ANDRE STINKS
 
@@ -32,7 +33,7 @@ namespace TyrantBuildTools
 
         public override CommandType Type => CommandType.Chat;
 
-        public override void Action(CommandCaller caller, string input, string[] args)
+        public override void Action(ICommandCaller caller, string input, string[] args)
         {
             if (Main.netMode != NetmodeID.SinglePlayer)
             {
@@ -46,7 +47,7 @@ namespace TyrantBuildTools
             }*/
             if (!ReloadNRejoinConfig.Instance.EnableReloadNRejoin)
             {
-                caller.Reply("To use reloadnrejoin you must enable it in the mod config first and reload the mod");
+                caller.Reply("To use reloadnrejoin you must enable it in the mod config first"); // and reload the mod
                 return;
             }
             /*if (!Pe.loaded)
@@ -102,7 +103,7 @@ namespace TyrantBuildTools
             Environment.SetEnvironmentVariable("TBT_REJOINPLAYER", characterName);
             Environment.SetEnvironmentVariable("TBT_REJOINWORLD", worldName);
         }
-        internal static bool loaded = false;
+        //internal static bool loaded = false;
         public override void Load()
         {
             //if (ReloadNRejoinConfig.Instance.EnableReloadNRejoin)
@@ -122,10 +123,11 @@ namespace TyrantBuildTools
                 MonoModHooks.Modify(typeof(ModContent).Assembly.GetType("Terraria.ModLoader.UI.UIModSources").GetMethod("Populate", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public), IL_UIModSources_Populate_TriggerSomethingAfterModFolderPopulation);
                 Terraria.IL_Main.DrawMenu += IL_Main_DrawMenu; ;
                 Terraria.On_Main.DrawMenu += Main_DrawMenu;
-                loaded = true;
+                //loaded = true;
             }
         }
-        internal static string modsourcesPathOverride;
+
+        // internal static string modsourcesPathOverride;
         static bool reloadModOnFound;
 
         internal static bool CheckExistingModName(string name)
@@ -137,7 +139,12 @@ namespace TyrantBuildTools
         static void OnFinishLoadingModSources()
         {
             string targetMod = ReloadNRejoinConfig.Instance?.TargetMod;
-            if (!reloadModOnFound || !CheckExistingModName(targetMod) && Environment.GetEnvironmentVariable("TBT_REJOINACTIVE") is "1")
+            //if (Environment.GetEnvironmentVariable("TBT_REJOINACTIVE") is not "1")
+            if(!reloadModOnFound)
+            {
+                return;
+            }
+            if (!CheckExistingModName(targetMod))
             {
                 Environment.SetEnvironmentVariable("TBT_REJOINACTIVE", null);
                 Environment.SetEnvironmentVariable("TBT_REJOINPLAYER", null);
@@ -249,193 +256,193 @@ namespace TyrantBuildTools
         }
     }
 
-    abstract class ReloadNRejoinSystem : ModSystem
-    {
-        const BindingFlags finstance = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-        const BindingFlags fstatic = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+    //abstract class ReloadNRejoinSystem : ModSystem
+    //{
+    //    const BindingFlags finstance = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+    //    const BindingFlags fstatic = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
-        #region For adding a delegate to OnSuccessfulLoad
-        delegate ref Action ActionRefFunc();
-        private static ActionRefFunc OnSuccessfulLoadFieldRef;
-        static ReloadNRejoinSystem()
-        {
-            FieldInfo ModLoader_OnSuccesfulLoad = typeof(ModLoader).GetField("OnSuccessfulLoad", fstatic);
-            System.Reflection.Emit.DynamicMethod method = new("ModLoader_OnSuccesfulLoad_RefGetter", typeof(Action).MakeByRefType(), null);
-            var il = method.GetILGenerator();
-            il.Emit(System.Reflection.Emit.OpCodes.Ldsflda, ModLoader_OnSuccesfulLoad);
-            il.Emit(System.Reflection.Emit.OpCodes.Ret);
-            OnSuccessfulLoadFieldRef = method.CreateDelegate<ActionRefFunc>();
-        }
-        internal static event Action OnSuccessfulLoad
-        {
-            add
-            {
-                // combines the current delegate with another action
-                // if it were to be suddenly changed by another thread while still combining, try again
-                ref Action actionRef = ref OnSuccessfulLoadFieldRef();
-                Action action, newAction;
-                do
-                {
-                    action = actionRef;
-                    newAction = (Action)Delegate.Combine(action, value);
-                }
-                while (!ReferenceEquals(Interlocked.CompareExchange(ref actionRef, newAction, action), action));
-            }
-            remove
-            {
-                ref Action actionRef = ref OnSuccessfulLoadFieldRef();
-                Action action, newAction;
-                do
-                {
-                    action = actionRef;
-                    newAction = (Action)Delegate.Remove(action, value);
-                }
-                while (!ReferenceEquals(Interlocked.CompareExchange(ref actionRef, newAction, action), action));
-            }
-        }
-        //static event Action OnSuccessfulLoad;
-        #endregion // For adding a delegate to OnSuccessfulLoad
+    //    #region For adding a delegate to OnSuccessfulLoad
+    //    delegate ref Action ActionRefFunc();
+    //    private static ActionRefFunc OnSuccessfulLoadFieldRef;
+    //    static ReloadNRejoinSystem()
+    //    {
+    //        FieldInfo ModLoader_OnSuccesfulLoad = typeof(ModLoader).GetField("OnSuccessfulLoad", fstatic);
+    //        System.Reflection.Emit.DynamicMethod method = new("ModLoader_OnSuccesfulLoad_RefGetter", typeof(Action).MakeByRefType(), null);
+    //        var il = method.GetILGenerator();
+    //        il.Emit(System.Reflection.Emit.OpCodes.Ldsflda, ModLoader_OnSuccesfulLoad);
+    //        il.Emit(System.Reflection.Emit.OpCodes.Ret);
+    //        OnSuccessfulLoadFieldRef = method.CreateDelegate<ActionRefFunc>();
+    //    }
+    //    internal static event Action OnSuccessfulLoad
+    //    {
+    //        add
+    //        {
+    //            // combines the current delegate with another action
+    //            // if it were to be suddenly changed by another thread while still combining, try again
+    //            ref Action actionRef = ref OnSuccessfulLoadFieldRef();
+    //            Action action, newAction;
+    //            do
+    //            {
+    //                action = actionRef;
+    //                newAction = (Action)Delegate.Combine(action, value);
+    //            }
+    //            while (!ReferenceEquals(Interlocked.CompareExchange(ref actionRef, newAction, action), action));
+    //        }
+    //        remove
+    //        {
+    //            ref Action actionRef = ref OnSuccessfulLoadFieldRef();
+    //            Action action, newAction;
+    //            do
+    //            {
+    //                action = actionRef;
+    //                newAction = (Action)Delegate.Remove(action, value);
+    //            }
+    //            while (!ReferenceEquals(Interlocked.CompareExchange(ref actionRef, newAction, action), action));
+    //        }
+    //    }
+    //    //static event Action OnSuccessfulLoad;
+    //    #endregion // For adding a delegate to OnSuccessfulLoad
 
-        private static object GetFieldValue(object obj, string fieldName) => (obj ?? throw new ArgumentNullException(nameof(obj))).GetType().GetField(fieldName, finstance).GetValue(obj);
-        private static T GetFieldValue<T>(object obj, string fieldName) => (T)(obj ?? throw new ArgumentNullException(nameof(obj))).GetType().GetField(fieldName, finstance).GetValue(obj);
+    //    private static object GetFieldValue(object obj, string fieldName) => (obj ?? throw new ArgumentNullException(nameof(obj))).GetType().GetField(fieldName, finstance).GetValue(obj);
+    //    private static T GetFieldValue<T>(object obj, string fieldName) => (T)(obj ?? throw new ArgumentNullException(nameof(obj))).GetType().GetField(fieldName, finstance).GetValue(obj);
 
-        private static Func<WorldFileData, bool> UIWorldSelect_CanWorldBePlayed = typeof(UIWorldSelect).GetMethod("CanWorldBePlayed", fstatic).CreateDelegate<Func<WorldFileData, bool>>();
-        private static Action OnSuccessfulLoad_OpenWorld = () =>
-        {
-            string playerName = Environment.GetEnvironmentVariable("TBT_RNRPLAYER");
-            string worldName = Environment.GetEnvironmentVariable("TBT_RNRWORLD");
-            string active = Environment.GetEnvironmentVariable("TBT_RNRACTIVE");
+    //    private static Func<WorldFileData, bool> UIWorldSelect_CanWorldBePlayed = typeof(UIWorldSelect).GetMethod("CanWorldBePlayed", fstatic).CreateDelegate<Func<WorldFileData, bool>>();
+    //    private static Action OnSuccessfulLoad_OpenWorld = () =>
+    //    {
+    //        string playerName = Environment.GetEnvironmentVariable("TBT_RNRPLAYER");
+    //        string worldName = Environment.GetEnvironmentVariable("TBT_RNRWORLD");
+    //        string active = Environment.GetEnvironmentVariable("TBT_RNRACTIVE");
 
-            CancelRNR();
-            OnSuccessfulLoad -= OnSuccessfulLoad_OpenWorld;
+    //        CancelRNR();
+    //        OnSuccessfulLoad -= OnSuccessfulLoad_OpenWorld;
 
-            var log = TyrantBuildTools.Instance.Logger;
+    //        var log = TyrantBuildTools.Instance.Logger;
 
-            if (active is not "1")
-            {
-                goto failure;
-            }
+    //        if (active is not "1")
+    //        {
+    //            goto failure;
+    //        }
 
-            if (string.IsNullOrEmpty(playerName) || string.IsNullOrEmpty(worldName))
-            {
-                //log.Info("RNR player or world is null");
-                goto failure;
-            }
+    //        if (string.IsNullOrEmpty(playerName) || string.IsNullOrEmpty(worldName))
+    //        {
+    //            //log.Info("RNR player or world is null");
+    //            goto failure;
+    //        }
 
-            WorldGen.clearWorld();
-            Main.LoadPlayers();
-            if (Main.PlayerList.FirstOrDefault(player => player.Name == playerName) is not PlayerFileData targetPlayer)
-            {
-                log.Warn($"RNR player {playerName} could not be found, skipping RNR.");
-                return;
-            }
-            targetPlayer.SetAsActive();
+    //        WorldGen.clearWorld();
+    //        Main.LoadPlayers();
+    //        if (Main.PlayerList.FirstOrDefault(player => player.Name == playerName) is not PlayerFileData targetPlayer)
+    //        {
+    //            log.Warn($"RNR player {playerName} could not be found, skipping RNR.");
+    //            return;
+    //        }
+    //        targetPlayer.SetAsActive();
 
-            Main.LoadWorlds();
-            if (Main.WorldList.FirstOrDefault(world => world.Name == worldName) is not WorldFileData targetWorld)
-            {
-                log.Warn($"RNR: World {worldName} could not be found, skipping RNR.");
-                goto failure;
-            }
-            if (!UIWorldSelect_CanWorldBePlayed(targetWorld))
-            {
-                log.Warn($"RNR: World {worldName} cannot be loaded, skipping RNR.");
-                goto failure;
-            }
-            targetWorld.SetAsActive();
+    //        Main.LoadWorlds();
+    //        if (Main.WorldList.FirstOrDefault(world => world.Name == worldName) is not WorldFileData targetWorld)
+    //        {
+    //            log.Warn($"RNR: World {worldName} could not be found, skipping RNR.");
+    //            goto failure;
+    //        }
+    //        if (!UIWorldSelect_CanWorldBePlayed(targetWorld))
+    //        {
+    //            log.Warn($"RNR: World {worldName} cannot be loaded, skipping RNR.");
+    //            goto failure;
+    //        }
+    //        targetWorld.SetAsActive();
 
-            WorldGen.playWorld();
-            Main.menuMode = MenuID.Status;
-            Main.MenuUI.SetState(null);
-            return;
+    //        WorldGen.playWorld();
+    //        Main.menuMode = MenuID.Status;
+    //        Main.MenuUI.SetState(null);
+    //        return;
 
-        failure:
-            Main.menuMode = 0;
-            return;
-        };
+    //    failure:
+    //        Main.menuMode = 0;
+    //        return;
+    //    };
 
-        static void OnEnterModSourcesMenu()
-        {
-            if (!ReloadNRejoinConfig.Instance.EnableReloadNRejoin || Environment.GetEnvironmentVariable("TBT_RNRACTIVE") is not "0")
-            {
-                CancelRNR();
-                return;
-            }
-            Environment.SetEnvironmentVariable("TBT_RNRACTIVE", null);
-            Console.WriteLine("RNR: Finished loading mod sources");
+    //    static void OnEnterModSourcesMenu()
+    //    {
+    //        if (!ReloadNRejoinConfig.Instance.EnableReloadNRejoin || Environment.GetEnvironmentVariable("TBT_RNRACTIVE") is not "0")
+    //        {
+    //            CancelRNR();
+    //            return;
+    //        }
+    //        Environment.SetEnvironmentVariable("TBT_RNRACTIVE", null);
+    //        Console.WriteLine("RNR: Finished loading mod sources");
 
-            string targetModName = ReloadNRejoinConfig.Instance.TargetMod;
-            object ui = typeof(ModLoader).Assembly.GetType("Terraria.ModLoader.UI.Interface").GetField("modSources", fstatic).GetValue(null);
+    //        string targetModName = ReloadNRejoinConfig.Instance.TargetMod;
+    //        object ui = typeof(ModLoader).Assembly.GetType("Terraria.ModLoader.UI.Interface").GetField("modSources", fstatic).GetValue(null);
 
-            IList items = GetFieldValue<IList>(ui, "_items");
-            UIPanel entry = items.OfType<UIPanel>().FirstOrDefault(t => GetFieldValue(t, "modName").Equals(targetModName));
-            if (entry == null)
-            {
-                TyrantBuildTools.Instance.Logger.Debug("RNR: Mod was not found within the mod list?");
-                return;
-            }
+    //        IList items = GetFieldValue<IList>(ui, "_items");
+    //        UIPanel entry = items.OfType<UIPanel>().FirstOrDefault(t => GetFieldValue(t, "modName").Equals(targetModName));
+    //        if (entry == null)
+    //        {
+    //            TyrantBuildTools.Instance.Logger.Debug("RNR: Mod was not found within the mod list?");
+    //            return;
+    //        }
 
-            entry.GetType().GetMethod("BuildAndReload", finstance).Invoke(entry, new object[] { null, null });
-            Environment.SetEnvironmentVariable("TBT_RNRACTIVE", "1");
-        }
-        static void CancelRNR()
-        {
-            Environment.SetEnvironmentVariable("TBT_RNRPLAYER", null);
-            Environment.SetEnvironmentVariable("TBT_RNRWORLD", null);
-            Environment.SetEnvironmentVariable("TBT_RNRACTIVE", null);
-        }
+    //        entry.GetType().GetMethod("BuildAndReload", finstance).Invoke(entry, new object[] { null, null });
+    //        Environment.SetEnvironmentVariable("TBT_RNRACTIVE", "1");
+    //    }
+    //    static void CancelRNR()
+    //    {
+    //        Environment.SetEnvironmentVariable("TBT_RNRPLAYER", null);
+    //        Environment.SetEnvironmentVariable("TBT_RNRWORLD", null);
+    //        Environment.SetEnvironmentVariable("TBT_RNRACTIVE", null);
+    //    }
 
-        public static void SetRestart(string targetPlayerName, string targetWorldName, bool isReload, bool? exitWorldNoSave = null)
-        {
-            Environment.SetEnvironmentVariable("TBT_RNRPLAYER", targetPlayerName);
-            Environment.SetEnvironmentVariable("TBT_RNRWORLD", targetWorldName);
-            Environment.SetEnvironmentVariable("TBT_RNRACTIVE", "0");
-            Main.menuMode = 888;
-            UIState modSourcesState = (UIState)typeof(ModLoader).Assembly.GetType("Terraria.ModLoader.UI.Interface", true).GetField("modSources", fstatic).GetValue(null);
-            Main.MenuUI.SetState(modSourcesState);
-        }
+    //    public static void SetRestart(string targetPlayerName, string targetWorldName, bool isReload, bool? exitWorldNoSave = null)
+    //    {
+    //        Environment.SetEnvironmentVariable("TBT_RNRPLAYER", targetPlayerName);
+    //        Environment.SetEnvironmentVariable("TBT_RNRWORLD", targetWorldName);
+    //        Environment.SetEnvironmentVariable("TBT_RNRACTIVE", "0");
+    //        Main.menuMode = 888;
+    //        UIState modSourcesState = (UIState)typeof(ModLoader).Assembly.GetType("Terraria.ModLoader.UI.Interface", true).GetField("modSources", fstatic).GetValue(null);
+    //        Main.MenuUI.SetState(modSourcesState);
+    //    }
 
-        private static void IL_UIModSources_Populate_TriggerSomethingAfterModFolderPopulation(ILContext il)
-        {
-            ILCursor c = new(il);
-            c.GotoNext(MoveType.Before, t => t.MatchPop());
-            c.Emit(OpCodes.Dup);
-            c.EmitDelegate<Action<Task>>((Task task) => task.ContinueWith((t) => Task.Run(OnEnterModSourcesMenu)));
-        }
-        /*private static void IL_ModLoader_InvokeTryEnterRNR(ILContext il)
-        {
-            ILCursor c = new(il);
-            FieldInfo field = typeof(ModLoader).GetField("OnSuccessfulLoad", fstatic);
-            c.GotoNext(MoveType.Before, i => i.MatchLdsfld(field));
-            c.EmitDelegate(() =>
-            {
-                OnSuccessfulLoad?.Invoke();
-            });
-        }*/
-        //private static object InvokeMethod(object obj, object[] args) => (obj ?? throw new ArgumentNullException(nameof(obj))).GetType().GetMethod(fieldName, finstance).GetValue(obj);
-        ILHook ILPopulate, ILLoad;
-        public override void Load()
-        {
-            base.Load();
-            //Task.Run(() =>
-            {
-                if (Environment.GetEnvironmentVariable("TBT_RNRACTIVE") is "1")
-                    OnSuccessfulLoad += OnSuccessfulLoad_OpenWorld;
-                var tmlAssembly = typeof(ModLoader).Assembly;
-                Type uiModSourcesType = tmlAssembly.GetType("Terraria.ModLoader.UI.UIModSources");
-                ILPopulate = new(uiModSourcesType.GetMethod("Populate", finstance), IL_UIModSources_Populate_TriggerSomethingAfterModFolderPopulation, true);
-                //ILLoad = new(typeof(ModLoader).GetMethod("Load", fstatic), IL_ModLoader_InvokeTryEnterRNR, true);
+    //    private static void IL_UIModSources_Populate_TriggerSomethingAfterModFolderPopulation(ILContext il)
+    //    {
+    //        ILCursor c = new(il);
+    //        c.GotoNext(MoveType.Before, t => t.MatchPop());
+    //        c.Emit(OpCodes.Dup);
+    //        c.EmitDelegate<Action<Task>>((Task task) => task.ContinueWith((t) => Task.Run(OnEnterModSourcesMenu)));
+    //    }
+    //    /*private static void IL_ModLoader_InvokeTryEnterRNR(ILContext il)
+    //    {
+    //        ILCursor c = new(il);
+    //        FieldInfo field = typeof(ModLoader).GetField("OnSuccessfulLoad", fstatic);
+    //        c.GotoNext(MoveType.Before, i => i.MatchLdsfld(field));
+    //        c.EmitDelegate(() =>
+    //        {
+    //            OnSuccessfulLoad?.Invoke();
+    //        });
+    //    }*/
+    //    //private static object InvokeMethod(object obj, object[] args) => (obj ?? throw new ArgumentNullException(nameof(obj))).GetType().GetMethod(fieldName, finstance).GetValue(obj);
+    //    ILHook ILPopulate, ILLoad;
+    //    public override void Load()
+    //    {
+    //        base.Load();
+    //        //Task.Run(() =>
+    //        {
+    //            if (Environment.GetEnvironmentVariable("TBT_RNRACTIVE") is "1")
+    //                OnSuccessfulLoad += OnSuccessfulLoad_OpenWorld;
+    //            var tmlAssembly = typeof(ModLoader).Assembly;
+    //            Type uiModSourcesType = tmlAssembly.GetType("Terraria.ModLoader.UI.UIModSources");
+    //            ILPopulate = new(uiModSourcesType.GetMethod("Populate", finstance), IL_UIModSources_Populate_TriggerSomethingAfterModFolderPopulation, true);
+    //            //ILLoad = new(typeof(ModLoader).GetMethod("Load", fstatic), IL_ModLoader_InvokeTryEnterRNR, true);
 
-            }//);
-        }
-        public override void Unload()
-        {
-            OnSuccessfulLoad -= OnSuccessfulLoad_OpenWorld;
-            ILPopulate?.Dispose();
-            ILLoad?.Dispose();
-            base.Unload();
-        }
+    //        }//);
+    //    }
+    //    public override void Unload()
+    //    {
+    //        OnSuccessfulLoad -= OnSuccessfulLoad_OpenWorld;
+    //        ILPopulate?.Dispose();
+    //        ILLoad?.Dispose();
+    //        base.Unload();
+    //    }
 
-    }
+    //}
 
 }
