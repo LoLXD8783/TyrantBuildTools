@@ -3,10 +3,14 @@
   <Import Project="..\tModLoader.targets" />
   <PropertyGroup>
     <AssemblyName>TyrantBuildTools</AssemblyName>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <LangVersion>10</LangVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include=".github\292689775-504fd2eb-f196-4f08-b553-e9e964d35621.gif" />
+    <Content Include=".github\rnrshowcase.mp4" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="tModLoader.CodeAssist" Version="0.1.*" />
   </ItemGroup>
