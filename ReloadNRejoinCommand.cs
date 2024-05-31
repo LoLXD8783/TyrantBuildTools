@@ -73,7 +73,7 @@ namespace TyrantBuildTools
                 else if (args[0] == "save")
                     save = true;
             }
-            if (save)
+            if (!save)
             {
                 Main.gameMenu = true;
                 Pe.SetRestart(Main.LocalPlayer.name, Main.ActiveWorldFileData.Name, true);
